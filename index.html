@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06121f">
+<title>BioMaint IA</title>
+<style>
+:root{--bg:#06121f;--card:#0b2236;--line:#164260;--cy:#2ee6d6;--bl:#4aa8ff;--gr:#3ddc97;--or:#ffb84a;--rd:#ff6b6b;--tx:#e8f4ff;--mu:#85a5c2}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(700px 380px at 85% -8%,#0e5a7a66,transparent),var(--bg);color:var(--tx);font:15px/1.45 system-ui,Roboto,sans-serif;min-height:100vh;padding:env(safe-area-inset-top) 0 calc(74px + env(safe-area-inset-bottom))}
+header{padding:14px 16px 6px}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:21px;font-weight:700;letter-spacing:.2px}
+h1 b{color:var(--cy)}
+.mode{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);display:flex;gap:6px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--gr);box-shadow:0 0 8px var(--gr)}
+.off .dot{background:var(--or);box-shadow:0 0 8px var(--or)}
+svg.ecg{width:100%;height:28px;margin-top:6px}
+.ecg path{fill:none;stroke:var(--cy);stroke-width:1.6;stroke-dasharray:420;stroke-dashoffset:420;animation:dr 2.2s ease-out forwards;opacity:.8}
+@keyframes dr{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.ecg path{animation:none;stroke-dashoffset:0}}
+main{padding:8px 16px}
+h2{font-size:16px;margin:16px 0 8px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mu{color:var(--mu);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#0a1d2f}
+.kpi b{display:block;font-size:26px;line-height:1.1}
+.bar{height:8px;border-radius:6px;background:#0d2a40;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:6px}
+.chip{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid currentColor;white-space:nowrap}
+.g{color:var(--gr)}.o{color:var(--or)}.r{color:var(--rd)}.c{color:var(--cy)}
+button,select,input,textarea{font:inherit;color:var(--tx)}
+.btn{background:linear-gradient(135deg,#0f7f8f,#1b6fc0);border:0;border-radius:11px;padding:10px 14px;font-weight:600}
+.btn.alt{background:transparent;border:1px solid var(--line)}
+.btn.del{background:transparent;border:1px solid #6b2a2a;color:var(--rd)}
+.btn:disabled{opacity:.5}
+.fab{position:fixed;right:16px;bottom:calc(86px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:50%;font-size:28px;padding:0;box-shadow:0 6px 20px #0008}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input,select,textarea{width:100%;background:#071a2a;border:1px solid var(--line);border-radius:10px;padding:10px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#071a2cf2;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);backdrop-filter:blur(8px)}
+nav button{flex:1;background:none;border:0;padding:9px 0 8px;color:var(--mu);font-size:11px;position:relative}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--cy)}
+nav button .n{position:absolute;top:4px;left:56%;background:var(--rd);color:#fff;border-radius:99px;font-size:10px;padding:0 5px}
+#sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:9}
+#sheet.on{display:flex}
+.sh{background:#08192a;border-top:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow:auto;padding:10px 16px calc(20px + env(safe-area-inset-bottom))}
+.grab{width:40px;height:4px;border-radius:4px;background:var(--line);margin:0 auto 8px}
+pre{white-space:pre-wrap;font:13px/1.5 system-ui,sans-serif;color:#cfe3f5}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(90px + env(safe-area-inset-bottom));background:#123651;border:1px solid var(--cy);border-radius:12px;padding:10px 14px;opacity:0;transition:opacity .25s;z-index:20;pointer-events:none}
+.ring{width:96px;height:96px;flex:none}
+.empty{text-align:center;color:var(--mu);padding:28px 10px}
+</style></head><body>
+<header>
+ <div class="top"><h1>BioMaint <b>IA</b></h1><div class="mode" id="mode"></div></div>
+ <svg class="ecg" viewBox="0 0 400 28" preserveAspectRatio="none"><path d="M0 14H120l8-3 6 3h10l6-12 8 24 6-12h14l8-4 8 4H400"/></svg>
+</header>
+<main id="main"></main>
+<nav id="nav"></nav>
+<div id="sheet" onclick="if(event.target===this)sheet('')"></div>
+<div id="toast"></div>
+<script>
+const K='biomaint_v1';
+let S=JSON.parse(localStorage.getItem(K)||'null')||{eq:[],mt:[],q:[],ev:[],set:{lang:'Français',key:''}};
+const LANGS=['Français','English','Español','Português','Deutsch','Italiano','العربية','中文'];
+const CRIT=['normale','haute','critique'],STAT=['En service','Dégradé','Hors service'],TYPES=['Préventive','Corrective','Contrôle sécurité','Étalonnage'];
+const D=86400000;let tab='home';
+const $=s=>document.querySelector(s),v=id=>document.getElementById(id).value.trim();
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const iso=d=>d.toISOString().slice(0,10);
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const diff=m=>Math.round((new Date(m.date+'T00:00:00')-today())/D);
+const eqOf=id=>S.eq.find(e=>e.id===id);
+const online=()=>navigator.onLine;
+function save(){localStorage.setItem(K,JSON.stringify(S));sched()}
+function toast(t){const o=$('#toast');o.textContent=t;o.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>o.style.opacity=0,2800)}
+function log(t,x){S.ev.push({t,x,d:iso(new Date())});S.ev=S.ev.slice(-50)}
+function sheet(h){const s=$('#sheet');s.innerHTML=h?'<div class="sh"><div class="grab"></div>'+h+'</div>':'';s.className=h?'on':''}
+
+/* ---------- Risque (score par règles pondérées) ---------- */
+function risk(e){
+ const ms=S.mt.filter(m=>m.eq===e.id);
+ const late=ms.filter(m=>!m.done&&diff(m)<0).length;
+ const last=ms.filter(m=>m.done).map(m=>m.doneDate).sort().pop()||e.install;
+ const since=last?Math.max(0,Math.round((today()-new Date(last))/D)):0;
+ const f=+e.freq||180;
+ const s=Math.min(40,since/f*30)+late*20+({critique:20,haute:12,normale:5}[e.crit]||5)+(e.status==='Hors service'?20:e.status==='Dégradé'?12:0);
+ return Math.min(100,Math.round(s));
+}
+const rc=r=>r>=60?'r':r>=35?'o':'g';
+
+/* ---------- Alertes style GMAO ---------- */
+function alerts(){
+ const a=[];
+ S.mt.filter(m=>!m.done).forEach(m=>{const d=diff(m),e=eqOf(m.eq);if(!e)return;const n=e.name+' · '+m.type;
+  if(d<0)a.push({p:3,c:'r',t:'En retard de '+(-d)+' j',x:n});
+  else if(d<=7)a.push({p:d<=1?2:1,c:d<=1?'o':'c',t:d===0?"Aujourd'hui":'Dans '+d+' j',x:n})});
+ S.eq.forEach(e=>{const r=risk(e);if(r>=60)a.push({p:2,c:'r',t:'Risque élevé '+r+'/100',x:e.name})});
+ a.sort((x,y)=>y.p-x.p);
+ return a.concat(S.ev.slice().reverse().map(z=>({p:0,c:'mu',t:z.t,x:z.x,d:z.d})));
+}
+
+/* ---------- Notifications natives (Android) ---------- */
+const LN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
+async function sched(){
+ const ln=LN();if(!ln)return;
+ try{
+  const p=await ln.getPending();if(p.notifications.length)await ln.cancel({notifications:p.notifications});
+  const list=[],now=new Date();let id=1;
+  S.mt.filter(m=>!m.done).forEach(m=>{const e=eqOf(m.eq);if(!e)return;
+   const base=new Date(m.date+'T08:00:00');
+   [7,3,1,0].forEach(o=>{const at=new Date(base.getTime()-o*D);if(at>now)list.push({id:id++,title:o?'Maintenance J-'+o:"Maintenance aujourd'hui",body:e.name+' · '+m.type,schedule:{at,allowWhileIdle:true}})});
+   if(diff(m)<0){const at=new Date();at.setDate(at.getDate()+1);at.setHours(8,0,0,0);list.push({id:id++,title:'Maintenance en retard',body:e.name+' · '+m.type,schedule:{at,every:'day',allowWhileIdle:true}})}});
+  if(list.length)await ln.schedule({notifications:list});
+ }catch(x){}
+}
+
+/* ---------- IA Gemini : recherche et traduction ---------- */
+async function gem(prompt){
+ if(!S.set.key)throw new Error('Clé API Gemini manquante (Réglages)');
+ const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+encodeURIComponent(S.set.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+ const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||'Erreur API');
+ return j.candidates[0].content.parts.map(p=>p.text||'').join('');
+}
+async function manual(eid,lang,translate){
+ const e=eqOf(eid);if(!e)return;
+ if(!online()){S.q.push({eq:eid,lang,tr:!!translate});log('Recherche en attente',e.name+' (hors ligne)');save();render();sheet('');return toast('Hors ligne : recherche mise en attente')}
+ toast('Recherche en cours…');
+ const p=translate&&e.manual?'Traduis fidèlement en '+lang+' le texte suivant, sans rien ajouter :\n\n'+e.manual.text
+  :'Équipement biomédical : '+e.brand+' '+e.model+' ('+e.name+'). Réponds en '+lang+', de façon concise et structurée : 1) résumé du manuel d\'utilisation, 2) procédure de maintenance préventive, avec une ligne exacte "FREQUENCE_JOURS: N" pour la fréquence recommandée, 3) points de contrôle de sécurité, 4) pannes fréquentes. Si tu n\'es pas sûr d\'une information, dis-le.';
+ try{const text=await gem(p);e.manual={lang,text,date:iso(new Date())};log(translate?'Manuel traduit':'Manuel trouvé',e.name+' ('+lang+')');toast('Manuel prêt : '+e.name)}
+ catch(x){log('Recherche échouée',e.name+' : '+x.message);toast('Échec : '+x.message)}
+ save();render();if($('#sheet').className==='on')openEq(eid);
+}
+async function flush(){
+ const q=S.q;if(!q.length||!online())return;S.q=[];save();
+ for(const j of q)await manual(j.eq,j.lang,j.tr);
+}
+
+/* ---------- Rendu ---------- */
+function render(){
+ const on=online();
+ $('#mode').className='mode'+(on?'':' off');
+ $('#mode').innerHTML='<i class="dot"></i>'+(on?'En ligne':'Hors ligne')+(S.q.length?' · '+S.q.length+' en attente':'');
+ const na=alerts().filter(a=>a.p>0).length;
+ $('#nav').innerHTML=[['home','◎','Accueil'],['eq','⚕','Équipements'],['mt','🗓','Maintenance'],['al','🔔','Alertes'],['set','⚙','Réglages']]
+  .map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="go(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='al'&&na?'<i class="n">'+na+'</i>':'')+'</button>').join('');
+ $('#main').innerHTML=({home,eq:eqTab,mt:mtTab,al:alTab,set:setTab})[tab]();
+}
+function go(t){tab=t;render();scrollTo(0,0)}
+
+function home(){
+ if(!S.eq.length)return '<div class="empty">Aucun équipement pour l\'instant.<br><br><button class="btn" onclick="editEq()">Ajouter un équipement</button></div>';
+ const open=S.mt.filter(m=>!m.done),late=open.filter(m=>diff(m)<0).length,soon=open.filter(m=>diff(m)>=0&&diff(m)<=7).length,done=S.mt.filter(m=>m.done).length;
+ const rs=S.eq.map(e=>({e,r:risk(e)})).sort((a,b)=>b.r-a.r),avg=Math.round(rs.reduce((s,x)=>s+x.r,0)/rs.length);
+ const tot=Math.max(1,S.mt.length),W=n=>Math.round(n/tot*100);
+ const C=2*Math.PI*38,col=avg>=60?'#ff6b6b':avg>=35?'#ffb84a':'#3ddc97';
+ return '<div class="card row"><svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="#0d2a40" stroke-width="9"/><circle cx="50" cy="50" r="38" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(C*avg/100)+' '+C+'" transform="rotate(-90 50 50)"/><text x="50" y="55" text-anchor="middle" fill="#e8f4ff" font-size="22" font-weight="700">'+avg+'</text></svg><div style="flex:1"><b>Risque moyen du parc</b><div class="mu">Score sur 100, calculé à partir des retards, de la criticité, de l\'état et du temps écoulé depuis la dernière maintenance.</div></div></div>'
+ +'<div class="grid"><div class="kpi"><span class="mu">Équipements</span><b>'+S.eq.length+'</b></div><div class="kpi"><span class="mu">En retard</span><b class="'+(late?'r':'g')+'">'+late+'</b></div><div class="kpi"><span class="mu">À faire sous 7 j</span><b class="'+(soon?'o':'g')+'">'+soon+'</b></div><div class="kpi"><span class="mu">Clôturées</span><b class="g">'+done+'</b></div></div>'
+ +'<h2>Répartition des maintenances</h2><div class="card">'
+ +[['En retard',late,'#ff6b6b'],['À venir',open.length-late,'#4aa8ff'],['Clôturées',done,'#3ddc97']].map(x=>'<div class="row mu"><span>'+x[0]+'</span><span>'+x[1]+'</span></div><div class="bar"><i style="width:'+W(x[1])+'%;background:'+x[2]+'"></i></div><div style="height:8px"></div>').join('')+'</div>'
+ +'<h2>Équipements les plus à risque</h2>'+rs.slice(0,5).map(x=>'<div class="card" onclick="openEq(\''+x.e.id+'\')"><div class="row"><b>'+esc(x.e.name)+'</b><span class="chip '+rc(x.r)+'">'+x.r+'/100</span></div><div class="bar"><i style="width:'+x.r+'%;background:var(--'+({r:'rd',o:'or',g:'gr'})[rc(x.r)]+')"></i></div></div>').join('');
+}
+function eqTab(){
+ return (S.eq.length?S.eq.map(e=>{const r=risk(e);return '<div class="card" onclick="openEq(\''+e.id+'\')"><div class="row"><b>'+esc(e.name)+'</b><span class="chip '+rc(r)+'">'+r+'/100</span></div><div class="mu">'+esc(e.brand)+' '+esc(e.model)+(e.service?' · '+esc(e.service):'')+'</div><div class="mu">'+esc(e.status)+(e.manual?' · manuel '+esc(e.manual.lang):'')+'</div></div>'}).join(''):'<div class="empty">Ajoute ton premier équipement avec le bouton +.</div>')
+ +'<button class="btn fab" onclick="editEq()">+</button>';
+}
+function mtTab(){
+ const l=S.mt.slice().sort((a,b)=>(a.done-b.done)||a.date.localeCompare(b.date));
+ return (l.length?l.map(m=>{const e=eqOf(m.eq),d=diff(m);if(!e)return '';
+  const chip=m.done?'<span class="chip g">Clôturée</span>':d<0?'<span class="chip r">Retard '+(-d)+' j</span>':'<span class="chip '+(d<=3?'o':'c')+'">J-'+d+'</span>';
+  return '<div class="card"><div class="row"><b>'+esc(e.name)+'</b>'+chip+'</div><div class="mu">'+esc(m.type)+' · '+m.date+'</div>'+(m.done?'<div class="mu">'+esc(m.works||'')+'</div>':'<div class="acts"><button class="btn" onclick="closeMt(\''+m.id+'\')">Clôturer</button><button class="btn del" onclick="delMt(\''+m.id+'\')">Supprimer</button></div>')+'</div>'}).join(''):'<div class="empty">Aucune maintenance planifiée.</div>')
+ +'<button class="btn fab" onclick="planMt()">+</button>';
+}
+function alTab(){
+ const a=alerts();
+ return a.length?a.map(x=>'<div class="card"><div class="row"><b class="'+x.c+'">'+esc(x.t)+'</b>'+(x.d?'<span class="mu">'+x.d+'</span>':'')+'</div><div class="mu">'+esc(x.x)+'</div></div>').join(''):'<div class="empty">Aucune alerte. Tout est à jour.</div>';
+}
+function setTab(){
+ return '<div class="card"><label>Langue des manuels</label><select id="s_lang" onchange="S.set.lang=this.value;save()">'+LANGS.map(l=>'<option'+(l===S.set.lang?' selected':'')+'>'+l+'</option>').join('')+'</select>'
+ +'<label>Clé API Google Gemini</label><input id="s_key" type="password" value="'+esc(S.set.key)+'" placeholder="Collée depuis Google AI Studio" onchange="S.set.key=this.value.trim();save();toast(\'Clé enregistrée\')"></div>'
+ +'<div class="card"><b>Modes de fonctionnement</b><div class="mu" style="margin-top:6px">En ligne : recherche et traduction des manuels. Hors ligne : saisie des équipements et planification des maintenances ; les recherches demandées attendent la reconnexion.</div></div>'
+ +'<div class="card"><b>Données</b><div class="mu">Stockées uniquement sur ce téléphone.</div><div class="acts"><button class="btn alt" onclick="exp()">Exporter (JSON)</button><button class="btn del" onclick="if(confirm(\'Tout effacer ?\')){S={eq:[],mt:[],q:[],ev:[],set:S.set};save();render()}">Tout effacer</button></div></div>';
+}
+
+/* ---------- Équipements ---------- */
+function openEq(id){
+ const e=eqOf(id);if(!e)return;const r=risk(e);
+ sheet('<div class="row"><h2 style="margin:6px 0">'+esc(e.name)+'</h2><span class="chip '+rc(r)+'">'+r+'/100</span></div>'
+ +'<div class="mu">'+esc(e.brand)+' '+esc(e.model)+'<br>Service : '+esc(e.service||'—')+' · Criticité : '+e.crit+' · '+e.status+'<br>Fréquence de maintenance : '+(e.freq||'—')+' j · Installé : '+(e.install||'—')+'</div>'
+ +'<div class="acts"><button class="btn" onclick="planMt(\''+id+'\')">Planifier</button><button class="btn alt" onclick="editEq(\''+id+'\')">Modifier</button><button class="btn del" onclick="delEq(\''+id+'\')">Supprimer</button></div>'
+ +'<h2>Manuel et infos de maintenance</h2><label>Langue</label><select id="m_lang">'+LANGS.map(l=>'<option'+(l===(e.manual&&e.manual.lang||S.set.lang)?' selected':'')+'>'+l+'</option>').join('')+'</select>'
+ +'<div class="acts"><button class="btn" onclick="manual(\''+id+'\',v(\'m_lang\'),false)">Rechercher</button>'+(e.manual?'<button class="btn alt" onclick="manual(\''+id+'\',v(\'m_lang\'),true)">Traduire</button>':'')+'</div>'
+ +(online()?'':'<div class="mu" style="margin-top:8px">Hors ligne : la demande sera lancée à la reconnexion.</div>')
+ +(e.manual?'<div class="card" style="margin-top:12px"><div class="mu">'+esc(e.manual.lang)+' · '+e.manual.date+' · texte généré par IA, à vérifier avec la documentation du constructeur</div><pre>'+esc(e.manual.text)+'</pre>'+(/FREQUENCE_JOURS:\s*(\d+)/.test(e.manual.text)?'<button class="btn alt" onclick="applyFreq(\''+id+'\')">Appliquer la fréquence proposée ('+e.manual.text.match(/FREQUENCE_JOURS:\s*(\d+)/)[1]+' j)</button>':'')+'</div>':''));
+}
+function applyFreq(id){const e=eqOf(id);e.freq=+e.manual.text.match(/FREQUENCE_JOURS:\s*(\d+)/)[1];save();render();openEq(id);toast('Fréquence mise à jour')}
+function editEq(id){
+ const e=id?eqOf(id):{name:'',brand:'',model:'',service:'',freq:180,install:'',crit:'normale',status:'En service'};
+ sheet('<h2 style="margin:6px 0">'+(id?'Modifier':'Nouvel')+' équipement</h2>'
+ +'<label>Nom</label><input id="f_name" value="'+esc(e.name)+'" placeholder="Ex. Moniteur patient">'
+ +'<label>Marque</label><input id="f_brand" value="'+esc(e.brand)+'"><label>Modèle</label><input id="f_model" value="'+esc(e.model)+'">'
+ +'<label>Service utilisateur</label><input id="f_service" value="'+esc(e.service)+'">'
+ +'<label>Fréquence de maintenance (jours)</label><input id="f_freq" type="number" value="'+esc(e.freq)+'">'
+ +'<label>Date d\'installation</label><input id="f_install" type="date" value="'+esc(e.install)+'">'
+ +'<label>Criticité</label><select id="f_crit">'+CRIT.map(c=>'<option'+(c===e.crit?' selected':'')+'>'+c+'</option>').join('')+'</select>'
+ +'<label>État</label><select id="f_status">'+STAT.map(c=>'<option'+(c===e.status?' selected':'')+'>'+c+'</option>').join('')+'</select>'
+ +'<div class="acts"><button class="btn" onclick="saveEq(\''+(id||'')+'\')">Enregistrer</button><button class="btn alt" onclick="sheet(\'\')">Annuler</button></div>');
+}
+function saveEq(id){
+ if(!v('f_name'))return toast('Le nom est obligatoire');
+ const o={name:v('f_name'),brand:v('f_brand'),model:v('f_model'),service:v('f_service'),freq:+v('f_freq')||180,install:v('f_install'),crit:v('f_crit'),status:v('f_status')};
+ if(id)Object.assign(eqOf(id),o);else S.eq.push({id:uid(),...o});
+ save();sheet('');render();toast('Équipement enregistré');
+}
+function delEq(id){if(!confirm('Supprimer cet équipement et ses maintenances ?'))return;S.eq=S.eq.filter(e=>e.id!==id);S.mt=S.mt.filter(m=>m.eq!==id);save();sheet('');render()}
+
+/* ---------- Maintenances ---------- */
+function planMt(eid){
+ if(!S.eq.length)return toast("Ajoute d'abord un équipement");
+ const e=eid&&eqOf(eid),d=new Date(today().getTime()+(e?+e.freq||30:30)*D);
+ sheet('<h2 style="margin:6px 0">Planifier une maintenance</h2><label>Équipement</label><select id="p_eq">'+S.eq.map(x=>'<option value="'+x.id+'"'+(x.id===eid?' selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select>'
+ +'<label>Type</label><select id="p_type">'+TYPES.map(t=>'<option>'+t+'</option>').join('')+'</select><label>Date prévue</label><input id="p_date" type="date" value="'+iso(d)+'">'
+ +'<div class="acts"><button class="btn" onclick="saveMt()">Planifier</button><button class="btn alt" onclick="sheet(\'\')">Annuler</button></div>');
+}
+function saveMt(){if(!v('p_date'))return toast('Choisis une date');S.mt.push({id:uid(),eq:v('p_eq'),type:v('p_type'),date:v('p_date'),done:false});save();sheet('');render();toast('Maintenance planifiée')}
+function delMt(id){S.mt=S.mt.filter(m=>m.id!==id);save();render()}
+function closeMt(id){
+ const m=S.mt.find(x=>x.id===id),e=eqOf(m.eq),n=new Date(today().getTime()+(+e.freq||180)*D);
+ sheet('<h2 style="margin:6px 0">Clôturer : '+esc(e.name)+'</h2><label>Travaux effectués</label><textarea id="c_works" rows="3"></textarea>'
+ +'<label>Pièces remplacées / consommables</label><textarea id="c_parts" rows="2"></textarea>'
+ +'<label>État final de l\'équipement</label><select id="c_stat">'+STAT.map(s=>'<option>'+s+'</option>').join('')+'</select>'
+ +'<label>Prochaine échéance recommandée</label><input id="c_next" type="date" value="'+iso(n)+'">'
+ +'<div class="acts"><button class="btn" onclick="doneMt(\''+id+'\')">Clôturer</button><button class="btn alt" onclick="sheet(\'\')">Annuler</button></div>');
+}
+function doneMt(id){
+ const m=S.mt.find(x=>x.id===id),e=eqOf(m.eq);
+ Object.assign(m,{done:true,doneDate:iso(new Date()),works:v('c_works'),parts:v('c_parts'),finalStatus:v('c_stat')});
+ e.status=v('c_stat');if(v('c_next'))S.mt.push({id:uid(),eq:e.id,type:'Préventive',date:v('c_next'),done:false});
+ save();sheet('');render();toast('Maintenance clôturée, prochaine échéance planifiée');
+}
+function exp(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='biomaint-export.json';a.click()}
+
+/* ---------- Démarrage ---------- */
+addEventListener('online',()=>{render();flush()});addEventListener('offline',render);
+document.addEventListener('DOMContentLoaded',async()=>{
+ render();const ln=LN();if(ln){try{await ln.requestPermissions()}catch(x){}}
+ sched();flush();
+});
+</script></body></html>
